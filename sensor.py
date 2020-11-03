@@ -20,7 +20,7 @@ from homeassistant.const import (
 
 from homeassistant.helpers.entity import Entity
 
-from .const import _LOGGER, DOMAIN, UNIT_PERCENTAGE
+from .const import _LOGGER, CONF_NAMESPACE, DOMAIN, UNIT_PERCENTAGE
 
 DEPENDENCIES = ["homeseer"]
 
@@ -28,7 +28,7 @@ DEPENDENCIES = ["homeseer"]
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     """Set up HomeSeer sensor-type devices."""
     sensor_devices = []
-    homeseer = hass.data[DOMAIN]
+    homeseer = hass.data[DOMAIN][discovery_info[CONF_NAMESPACE]]
 
     for device in homeseer.devices:
         if device.device_type_string in HASS_SENSORS:

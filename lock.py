@@ -6,7 +6,7 @@ from pyhs3 import HASS_LOCKS, STATE_LISTENING
 
 from homeassistant.components.lock import LockEntity
 
-from .const import _LOGGER, DOMAIN
+from .const import _LOGGER, CONF_NAMESPACE, DOMAIN
 
 DEPENDENCIES = ["homeseer"]
 
@@ -14,7 +14,7 @@ DEPENDENCIES = ["homeseer"]
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     """Set up HomeSeer lock-type devices."""
     lock_devices = []
-    homeseer = hass.data[DOMAIN]
+    homeseer = hass.data[DOMAIN][discovery_info[CONF_NAMESPACE]]
 
     for device in homeseer.devices:
         if device.device_type_string in HASS_LOCKS:

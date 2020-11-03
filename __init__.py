@@ -24,6 +24,7 @@ from .const import (
     _LOGGER,
     CONF_ALLOW_EVENTS,
     CONF_ASCII_PORT,
+    CONF_BRIDGES,
     CONF_HTTP_PORT,
     CONF_NAME_TEMPLATE,
     CONF_NAMESPACE,
@@ -40,20 +41,26 @@ from .const import (
 
 REQUIREMENTS = ["pyhs3==0.11"]
 
+BRIDGE_CONFIG_SCHEMA = vol.Schema(
+    {
+        vol.Required(CONF_HOST): cv.string,
+        vol.Required(CONF_NAMESPACE): cv.string,
+        vol.Optional(CONF_PASSWORD, default=DEFAULT_PASSWORD): cv.string,
+        vol.Optional(CONF_USERNAME, default=DEFAULT_USERNAME): cv.string,
+        vol.Optional(CONF_HTTP_PORT, default=DEFAULT_HTTP_PORT): cv.port,
+        vol.Optional(CONF_ASCII_PORT, default=DEFAULT_ASCII_PORT): cv.port,
+        vol.Optional(CONF_NAME_TEMPLATE, default=DEFAULT_NAME_TEMPLATE): cv.template,
+        vol.Optional(CONF_ALLOW_EVENTS, default=DEFAULT_ALLOW_EVENTS): cv.boolean,
+    }
+)
+
 CONFIG_SCHEMA = vol.Schema(
     {
         DOMAIN: vol.Schema(
             {
-                vol.Required(CONF_HOST): cv.string,
-                vol.Required(CONF_NAMESPACE): cv.string,
-                vol.Optional(CONF_PASSWORD, default=DEFAULT_PASSWORD): cv.string,
-                vol.Optional(CONF_USERNAME, default=DEFAULT_USERNAME): cv.string,
-                vol.Optional(CONF_HTTP_PORT, default=DEFAULT_HTTP_PORT): cv.port,
-                vol.Optional(CONF_ASCII_PORT, default=DEFAULT_ASCII_PORT): cv.port,
-                vol.Optional(CONF_NAME_TEMPLATE, default=DEFAULT_NAME_TEMPLATE) : cv.template,
-                vol.Optional(
-                    CONF_ALLOW_EVENTS, default=DEFAULT_ALLOW_EVENTS
-                ): cv.boolean,
+                vol.Required(CONF_BRIDGES): vol.All(
+                    cv.ensure_list, [BRIDGE_CONFIG_SCHEMA]
+                ),
             }
         )
     },
@@ -64,14 +71,25 @@ CONFIG_SCHEMA = vol.Schema(
 async def async_setup(hass, config):
     """Set up the HomeSeer component."""
     config = config.get(DOMAIN)
-    host = config[CONF_HOST]
-    namespace = config[CONF_NAMESPACE]
-    username = config[CONF_USERNAME]
-    password = config[CONF_PASSWORD]
-    http_port = config[CONF_HTTP_PORT]
-    ascii_port = config[CONF_ASCII_PORT]
-    name_template = config[CONF_NAME_TEMPLATE]
-    allow_events = config[CONF_ALLOW_EVENTS]
+    hass.data[DOMAIN] = {}
+
+    await asyncio.wait(
+        [async_setup_bridge(hass, bridge) for bridge in config[CONF_BRIDGES]]
+    )
+
+    return True
+
+
+async def async_setup_bridge(hass, bridge_config):
+    """Set up a single HomeSeer bridge."""
+    host = bridge_config[CONF_HOST]
+    namespace = bridge_config[CONF_NAMESPACE]
+    username = bridge_config[CONF_USERNAME]
+    password = bridge_config[CONF_PASSWORD]
+    http_port = bridge_config[CONF_HTTP_PORT]
+    ascii_port = bridge_config[CONF_ASCII_PORT]
+    name_template = bridge_config[CONF_NAME_TEMPLATE]
+    allow_events = bridge_config[CONF_ALLOW_EVENTS]
 
     name_template.hass = hass
 
@@ -105,21 +123,29 @@ async def async_setup(hass, config):
 
     for platform in HOMESEER_PLATFORMS:
         hass.async_create_task(
-            discovery.async_load_platform(hass, platform, DOMAIN, {}, config)
+            discovery.async_load_platform(
+                hass, platform, DOMAIN, {CONF_NAMESPACE: namespace}, bridge_config
+            )
         )
 
-    hass.data[DOMAIN] = homeseer
+    hass.data[DOMAIN][namespace] = homeseer
 
     hass.bus.async_listen_once("homeassistant_stop", homeseer.stop)
-
-    return True
 
 
 class HSConnection:
     """Manages a connection between HomeSeer and Home Assistant."""
 
     def __init__(
-        self, hass, host, username, password, http_port, ascii_port, namespace, name_template
+        self,
+        hass,
+        host,
+        username,
+        password,
+        http_port,
+        ascii_port,
+        namespace,
+        name_template,
     ):
         self._hass = hass
         self._session = aiohttp_client.async_get_clientsession(self._hass)

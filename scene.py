@@ -4,7 +4,7 @@ Support for HomeSeer Events.
 
 from homeassistant.components.scene import Scene
 
-from .const import _LOGGER, DOMAIN
+from .const import _LOGGER, CONF_NAMESPACE, DOMAIN
 
 DEPENDENCIES = ["homeseer"]
 
@@ -12,7 +12,7 @@ DEPENDENCIES = ["homeseer"]
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     """Set up HomeSeer events as Home Assistant scenes."""
     scenes = []
-    homeseer = hass.data[DOMAIN]
+    homeseer = hass.data[DOMAIN][discovery_info[CONF_NAMESPACE]]
 
     for event in homeseer.events:
         dev = HSScene(event)
