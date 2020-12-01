@@ -8,21 +8,29 @@ from .pyhs3ng import (
     DEVICE_ZWAVE_LUMINANCE,
     DEVICE_ZWAVE_OPERATING_STATE,
     DEVICE_ZWAVE_RELATIVE_HUMIDITY,
+    DEVICE_ZWAVE_SENSOR_MULTILEVEL,
     HASS_SENSORS,
     STATE_LISTENING,
+    HS_UNIT_CELSIUS,
+    HS_UNIT_FAHRENHEIT,
+    HS_UNIT_LUX,
+    HS_UNIT_PERCENTAGE,
 )
 
 from homeassistant.const import (
     DEVICE_CLASS_BATTERY,
     DEVICE_CLASS_HUMIDITY,
     DEVICE_CLASS_ILLUMINANCE,
+    DEVICE_CLASS_TEMPERATURE,
+    LIGHT_LUX,
+    TEMP_CELSIUS,
+    TEMP_FAHRENHEIT,
+    PERCENTAGE,
 )
 
 from homeassistant.helpers.entity import Entity
-
 from .hoomseer import HomeseerEntity
-
-from .const import _LOGGER, DOMAIN, UNIT_PERCENTAGE
+from .const import _LOGGER, DOMAIN
 
 DEPENDENCIES = ["homeseer"]
 
@@ -59,7 +67,7 @@ class HSBattery(HSSensor):
 
     @property
     def unit_of_measurement(self):
-        return UNIT_PERCENTAGE
+        return PERCENTAGE
 
     @property
     def icon(self):
@@ -95,7 +103,7 @@ class HSHumidity(HSSensor):
 
     @property
     def unit_of_measurement(self):
-        return UNIT_PERCENTAGE
+        return PERCENTAGE
 
     @property
     def device_class(self):
@@ -107,7 +115,7 @@ class HSLuminance(HSSensor):
 
     @property
     def unit_of_measurement(self):
-        return UNIT_PERCENTAGE
+        return PERCENTAGE
 
     @property
     def device_class(self):
@@ -180,6 +188,32 @@ class HSOperatingState(HSSensor):
         return None
 
 
+class HSSensorMultilevel(HSSensor):
+    """Representation of a HomeSeer multi-level sensor."""
+
+    @property
+    def device_class(self):
+        if self._device.uom == HS_UNIT_LUX:
+            return DEVICE_CLASS_ILLUMINANCE
+        if self._device.uom == HS_UNIT_CELSIUS:
+            return DEVICE_CLASS_TEMPERATURE
+        if self._device.uom == HS_UNIT_FAHRENHEIT:
+            return DEVICE_CLASS_TEMPERATURE
+        return None
+
+    @property
+    def unit_of_measurement(self):
+        if self._device.uom == HS_UNIT_LUX:
+            return LIGHT_LUX
+        if self._device.uom == HS_UNIT_CELSIUS:
+            return TEMP_CELSIUS
+        if self._device.uom == HS_UNIT_FAHRENHEIT:
+            return TEMP_FAHRENHEIT
+        if self._device.uom == HS_UNIT_PERCENTAGE:
+            return PERCENTAGE
+        return None
+
+
 def get_sensor_device(device, homeseer):
     """Return the proper sensor object based on device type."""
     if device.device_type_string == DEVICE_ZWAVE_BATTERY:
@@ -192,4 +226,6 @@ def get_sensor_device(device, homeseer):
         return HSFanState(device, homeseer)
     elif device.device_type_string == DEVICE_ZWAVE_OPERATING_STATE:
         return HSOperatingState(device, homeseer)
+    elif device.device_type_string == DEVICE_ZWAVE_SENSOR_MULTILEVEL:
+        return HSSensorMultilevel(device, homeseer)
     return HSSensor(device, homeseer)
