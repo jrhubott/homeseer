@@ -56,11 +56,22 @@ class HSSensor(HomeseerEntity, Entity):
     def __init__(self, device, connection):
         self._device = device
         self._connection = connection
+        self._uom = None
 
     @property
     def state(self):
         """Return the state of the device."""
         return self._device.value
+
+    @property
+    def should_poll(self):
+        """No polling needed."""
+        return False
+
+    async def async_added_to_hass(self):
+        """Register value update callback and cache unit of measure."""
+        self._device.register_update_callback(self.async_schedule_update_ha_state)
+        self._uom = await parse_uom(self._device)
 
 
 class HSBattery(HSSensor):
@@ -194,25 +205,23 @@ class HSSensorMultilevel(HSSensor):
 
     @property
     def device_class(self):
-        uom = parse_uom(self._device)
-        if uom == HS_UNIT_LUX:
+        if self._uom == HS_UNIT_LUX:
             return DEVICE_CLASS_ILLUMINANCE
-        if uom == HS_UNIT_CELSIUS:
+        if self._uom == HS_UNIT_CELSIUS:
             return DEVICE_CLASS_TEMPERATURE
-        if uom == HS_UNIT_FAHRENHEIT:
+        if self._uom == HS_UNIT_FAHRENHEIT:
             return DEVICE_CLASS_TEMPERATURE
         return None
 
     @property
     def unit_of_measurement(self):
-        uom = parse_uom(self._device)
-        if uom == HS_UNIT_LUX:
+        if self._uom == HS_UNIT_LUX:
             return LIGHT_LUX
-        if uom == HS_UNIT_CELSIUS:
+        if self._uom == HS_UNIT_CELSIUS:
             return TEMP_CELSIUS
-        if uom == HS_UNIT_FAHRENHEIT:
+        if self._uom == HS_UNIT_FAHRENHEIT:
             return TEMP_FAHRENHEIT
-        if uom == HS_UNIT_PERCENTAGE:
+        if self._uom == HS_UNIT_PERCENTAGE:
             return PERCENTAGE
         return None
 
