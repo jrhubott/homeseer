@@ -3,7 +3,6 @@ Support for HomeSeer light-type devices.
 """
 
 from .pyhs3ng import HASS_LIGHTS, STATE_LISTENING
-
 from homeassistant.components.light import (
     ATTR_BRIGHTNESS,
     SUPPORT_BRIGHTNESS,
