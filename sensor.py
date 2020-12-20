@@ -2,7 +2,7 @@
 Support for HomeSeer sensor-type devices.
 """
 
-from pyhs3 import (
+from .pyhs3ng import (
     DEVICE_ZWAVE_BATTERY,
     DEVICE_ZWAVE_FAN_STATE,
     DEVICE_ZWAVE_LUMINANCE,
@@ -16,7 +16,7 @@ from homeassistant.const import (
     DEVICE_CLASS_BATTERY,
     DEVICE_CLASS_HUMIDITY,
     DEVICE_CLASS_ILLUMINANCE,
-    )
+)
 
 from homeassistant.helpers.entity import Entity
 

@@ -2,7 +2,7 @@
 Support for HomeSeer cover-type devices.
 """
 
-from pyhs3 import HASS_COVERS, STATE_LISTENING
+from .pyhs3ng import HASS_COVERS, STATE_LISTENING
 
 from homeassistant.components.cover import CoverEntity
 from homeassistant.const import STATE_CLOSED, STATE_CLOSING, STATE_OPENING

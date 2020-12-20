@@ -7,7 +7,7 @@ https://github.com/marthoc/homeseer
 import asyncio
 
 import voluptuous as vol
-from pyhs3 import HomeTroller, HASS_EVENTS, STATE_LISTENING
+from .pyhs3ng import HomeTroller, HASS_EVENTS, STATE_LISTENING
 
 import homeassistant.helpers.config_validation as cv
 from homeassistant.const import (
@@ -50,7 +50,9 @@ CONFIG_SCHEMA = vol.Schema(
                 vol.Optional(CONF_USERNAME, default=DEFAULT_USERNAME): cv.string,
                 vol.Optional(CONF_HTTP_PORT, default=DEFAULT_HTTP_PORT): cv.port,
                 vol.Optional(CONF_ASCII_PORT, default=DEFAULT_ASCII_PORT): cv.port,
-                vol.Optional(CONF_NAME_TEMPLATE, default=DEFAULT_NAME_TEMPLATE) : cv.template,
+                vol.Optional(
+                    CONF_NAME_TEMPLATE, default=DEFAULT_NAME_TEMPLATE
+                ): cv.template,
                 vol.Optional(
                     CONF_ALLOW_EVENTS, default=DEFAULT_ALLOW_EVENTS
                 ): cv.boolean,
@@ -119,7 +121,15 @@ class HSConnection:
     """Manages a connection between HomeSeer and Home Assistant."""
 
     def __init__(
-        self, hass, host, username, password, http_port, ascii_port, namespace, name_template
+        self,
+        hass,
+        host,
+        username,
+        password,
+        http_port,
+        ascii_port,
+        namespace,
+        name_template,
     ):
         self._hass = hass
         self._session = aiohttp_client.async_get_clientsession(self._hass)
