@@ -117,3 +117,4 @@ dmypy.json
 
 bin
 pyvenv.cfg
+.DS_Store
