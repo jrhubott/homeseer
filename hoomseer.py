@@ -32,11 +32,6 @@ class HomeseerEntity:
         """No polling needed."""
         return False
 
-    @property
-    def state(self):
-        """Return the state of the device."""
-        return self._device.value
-
     async def async_added_to_hass(self):
         """Register value update callback."""
         self._device.register_update_callback(self.async_schedule_update_ha_state)

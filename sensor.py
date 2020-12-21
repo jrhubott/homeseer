@@ -48,6 +48,11 @@ class HSSensor(HomeseerEntity, Entity):
         self._device = device
         self._connection = connection
 
+    @property
+    def state(self):
+        """Return the state of the device."""
+        return self._device.value
+
 
 class HSBattery(HSSensor):
     """Representation of a HomeSeer device that reports battery level."""
