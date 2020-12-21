@@ -3,6 +3,7 @@ Support for HomeSeer switch-type devices.
 """
 
 from .pyhs3ng import HASS_SWITCHES, STATE_LISTENING
+from .hoomseer import HomeseerEntity
 
 from homeassistant.components.switch import SwitchEntity
 
@@ -25,41 +26,12 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     async_add_entities(switch_devices)
 
 
-class HSSwitch(SwitchEntity):
+class HSSwitch(HomeseerEntity, SwitchEntity):
     """Representation of a HomeSeer switch-type device."""
 
     def __init__(self, device, connection):
         self._device = device
         self._connection = connection
-
-    @property
-    def available(self):
-        """Return whether the device is available."""
-        return self._connection.api.state == STATE_LISTENING
-
-    @property
-    def device_state_attributes(self):
-        attr = {
-            "Device Ref": self._device.ref,
-            "Location": self._device.location,
-            "Location 2": self._device.location2,
-        }
-        return attr
-
-    @property
-    def unique_id(self):
-        """Return a unique ID for the device."""
-        return f"{self._connection.namespace}-{self._device.ref}"
-
-    @property
-    def name(self):
-        """Return the name of the device."""
-        return self._connection.name_template.async_render(device=self._device).strip()
-
-    @property
-    def should_poll(self):
-        """No polling needed."""
-        return False
 
     @property
     def is_on(self):
@@ -71,7 +43,3 @@ class HSSwitch(SwitchEntity):
 
     async def async_turn_off(self, **kwargs):
         await self._device.off()
-
-    async def async_added_to_hass(self):
-        """Register value update callback."""
-        self._device.register_update_callback(self.async_schedule_update_ha_state)
