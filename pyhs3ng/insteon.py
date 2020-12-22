@@ -55,5 +55,4 @@ def get_insteon_device(raw, control_data, request):
     if device_type in INSTEON_BINARY_SENSORS:
         return ZWaveSwitchMultilevel(raw, control_data, request)
 
-    _LOGGER.debug(f"HomeSeer device type not supported: {device_type}")
     return None

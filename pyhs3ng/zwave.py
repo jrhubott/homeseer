@@ -1,7 +1,10 @@
 """Models Z-Wave devices."""
 
+import logging
+
+_LOGGER = logging.getLogger(__name__)
+
 from .const import (
-    _LOGGER,
     DEVICE_ZWAVE_BARRIER_OPERATOR,
     DEVICE_ZWAVE_BATTERY,
     DEVICE_ZWAVE_CENTRAL_SCENE,
@@ -191,5 +194,4 @@ def get_zwave_device(raw, control_data, request):
         return ZWaveSwitchMultilevel(raw, control_data, request)
     elif device_type == DEVICE_ZWAVE_TEMPERATURE:
         return ZWaveTemperature(raw, control_data, request)
-    _LOGGER.debug(f"HomeSeer device type not supported: {device_type}")
     return None

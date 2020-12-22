@@ -2,8 +2,11 @@
 
 import asyncio
 
+import logging
+
+_LOGGER = logging.getLogger(__name__)
+
 from .const import (
-    _LOGGER,
     REASON_RECONNECTED,
     STATE_IDLE,
     STATE_LISTENING,

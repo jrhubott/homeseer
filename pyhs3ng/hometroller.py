@@ -4,11 +4,15 @@ Allows sending commands via JSON API and listening for device changes via ASCII 
 """
 
 from asyncio import TimeoutError
+from config.custom_components.homeseer.pyhs3ng.device import HomeSeerDevice
 from aiohttp import BasicAuth, ContentTypeError
 from typing import Union
 
+import logging
+
+_LOGGER = logging.getLogger(__name__)
+
 from .const import (
-    _LOGGER,
     DEFAULT_ASCII_PORT,
     DEFAULT_HTTP_PORT,
     DEFAULT_PASSWORD,
@@ -48,6 +52,7 @@ class HomeTroller:
             async_disconnection_callback=self._disconnect_callback,
         )
         self.devices = {}
+        self.all_devices = {}
         self.events = []
 
     @property
@@ -123,6 +128,14 @@ class HomeTroller:
                     dev = get_insteon_device(device, control_data, self._request)
                 if dev is not None:
                     self.devices[dev.ref] = dev
+                else:
+                    # Create a dummy device
+                    dev = HomeSeerDevice(device, control_data, self._request)
+                    _LOGGER.debug(
+                        f"HomeSeer device type not supported: {dev.device_type_string}"
+                    )
+                # add to the all device list
+                self.all_devices[dev.ref] = dev
         except TypeError:
             _LOGGER.error("Error retrieving HomeSeer devices!")
 
@@ -144,14 +157,22 @@ class HomeTroller:
         try:
             device = self.devices[int(device_ref)]
             device.update_value(value)
-            _LOGGER.debug(
-                f"HomeSeer device '{device.name}' ({device.ref}) updated to: {device.value}"
+            _LOGGER.info(
+                f"{device.device_type_string} '{device.name}' ({device.ref}) updated to: {device.value}"
             )
 
         except KeyError:
-            _LOGGER.debug(
-                f"HomeSeer update received for unsupported device: {device_ref}"
-            )
+            try:
+                device = self.all_devices[int(device_ref)]
+                device.update_value(value)
+                _LOGGER.debug(
+                    f"Unsupported {device.device_type_string} '{device.name}' ({device.ref}) updated to: {device.value}"
+                )
+
+            except KeyError:
+                _LOGGER.error(
+                    f"HomeSeer update received for unknown device: {device_ref}"
+                )
 
     async def _disconnect_callback(self):
         for device in self.devices.values():
