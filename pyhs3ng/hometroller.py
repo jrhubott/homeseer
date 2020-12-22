@@ -4,7 +4,6 @@ Allows sending commands via JSON API and listening for device changes via ASCII 
 """
 
 from asyncio import TimeoutError
-from config.custom_components.homeseer.pyhs3ng.device import HomeSeerDevice
 from aiohttp import BasicAuth, ContentTypeError
 from typing import Union
 
