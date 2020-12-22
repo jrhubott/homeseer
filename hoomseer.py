@@ -25,11 +25,11 @@ class HomeseerEntity:
     @property
     def device_state_attributes(self):
         attr = {
-            "Device Ref": self._device.ref,
-            "Location": self._device.location,
-            "Location 2": self._device.location2,
-            "Device Type": self._device.device_type_string,
-            "Original Name": self.registry_entry.original_name,
+            "HS Ref": self._device.ref,
+            "HS Name": self._device.name,
+            "HS Location": self._device.location,
+            "HS Group": self._device.location2,
+            "HS Type": self._device.device_type_string,
         }
         return attr
 
