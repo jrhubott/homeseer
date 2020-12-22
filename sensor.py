@@ -9,6 +9,7 @@ from .pyhs3ng import (
     DEVICE_ZWAVE_OPERATING_STATE,
     DEVICE_ZWAVE_RELATIVE_HUMIDITY,
     DEVICE_ZWAVE_SENSOR_MULTILEVEL,
+    DEVICE_ZWAVE_TEMPERATURE,
     HASS_SENSORS,
     STATE_LISTENING,
     HS_UNIT_CELSIUS,
@@ -239,5 +240,7 @@ def get_sensor_device(device, homeseer):
     elif device.device_type_string == DEVICE_ZWAVE_OPERATING_STATE:
         return HSOperatingState(device, homeseer)
     elif device.device_type_string == DEVICE_ZWAVE_SENSOR_MULTILEVEL:
+        return HSSensorMultilevel(device, homeseer)
+    elif device.device_type_string == DEVICE_ZWAVE_TEMPERATURE:
         return HSSensorMultilevel(device, homeseer)
     return HSSensor(device, homeseer)
