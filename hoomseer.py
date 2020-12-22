@@ -9,9 +9,7 @@ class HomeseerEntity:
     def entity_id(self):
 
         if self._entity_id == None:
-            self._entity_id = (
-                f"{self.platform.domain}.{self._device.name}_{self._device.ref}"
-            )
+            self._entity_id = f"{self.platform.domain}.{self._device.location}_{self._device.name}_{self._device.ref}"
 
         return self._entity_id
 
