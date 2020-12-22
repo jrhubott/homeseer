@@ -4,6 +4,7 @@ Allows sending commands via JSON API and listening for device changes via ASCII 
 """
 
 from asyncio import TimeoutError
+from .device import HomeSeerDevice
 from aiohttp import BasicAuth, ContentTypeError
 from typing import Union
 
