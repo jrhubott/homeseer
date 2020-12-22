@@ -29,6 +29,7 @@ class HomeseerEntity:
             "Location": self._device.location,
             "Location 2": self._device.location2,
             "Device Type": self._device.device_type_string,
+            "Original Name": self.registry_entry.original_name,
         }
         return attr
 
