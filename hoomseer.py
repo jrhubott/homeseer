@@ -1,7 +1,24 @@
 from .pyhs3ng import STATE_LISTENING
+from homeassistant.helpers.entity import Entity
 
 
 class HomeseerEntity:
+    _entity_id = None
+
+    @property
+    def entity_id(self):
+
+        if self._entity_id == None:
+            self._entity_id = (
+                f"{self.platform.domain}.{self._device.name}_{self._device.ref}"
+            )
+
+        return self._entity_id
+
+    @entity_id.setter
+    def entity_id(self, value):
+        self._entity_id = value
+
     @property
     def available(self):
         """Return whether the device is available."""
