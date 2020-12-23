@@ -154,9 +154,10 @@ class HomeTroller:
     async def _update_device_value(self, device_ref, value):
         try:
             device = self.devices[int(device_ref)]
+            prev_value = device.value
             device.update_value(value)
             _LOGGER.info(
-                f"{device.device_type_string} '{device.name}' ({device.ref}) updated to: {device.value}"
+                f"{device.device_type_string} '{device.name}' ({device.ref}) updated from: {prev_value} to: {device.value}"
             )
 
         except KeyError:

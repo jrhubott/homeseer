@@ -7,7 +7,8 @@ https://github.com/marthoc/homeseer
 import asyncio
 
 import voluptuous as vol
-from .pyhs3ng import HomeTroller, HASS_EVENTS, STATE_LISTENING
+from .pyhs3ng import HomeTroller, STATE_LISTENING
+from .pyhs3ng.device import GenericEvent
 
 import homeassistant.helpers.config_validation as cv
 from homeassistant.const import (
@@ -169,7 +170,7 @@ class HSConnection:
 
     def add_remotes(self):
         for device in self.devices:
-            if device.device_type_string in HASS_EVENTS:
+            if issubclass(type(device), GenericEvent):
                 self.remotes.append(HSRemote(self._hass, device))
                 _LOGGER.info(
                     f"Added HomeSeer remote-type device: {device.name} (Ref: {device.ref})"

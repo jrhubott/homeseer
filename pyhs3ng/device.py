@@ -174,3 +174,7 @@ class GenericDoorLock(HomeSeerDevice):
 
 class GenericCover(HomeSeerDevice):
     pass
+
+
+class GenericEvent(HomeSeerDevice):
+    pass

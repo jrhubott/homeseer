@@ -12,6 +12,7 @@ _LOGGER = logging.getLogger(__name__)
 from .device import (
     GenericBatterySensor,
     GenericBinarySensor,
+    GenericEvent,
     GenericFanSensor,
     GenericHumiditySensor,
     GenericLuminanceSensor,
@@ -60,6 +61,8 @@ HASS_DICTIONARY = {
     "Z-Wave Door Lock": ZWaveDoorLock,
     # ZWave Cover
     "Z-Wave Barrier Operator": ZWaveBarrierOperator,
+    # ZWave Events
+    "Z-Wave Central Scene": GenericEvent,
 }
 
 
