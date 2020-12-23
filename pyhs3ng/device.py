@@ -1,5 +1,6 @@
 """Models the basic API data for a HomeSeer device."""
 
+from homeassistant.const import CONF_PASSWORD
 from .const import (
     REASON_DISCONNECTED,
     REASON_RECONNECTED,
@@ -88,3 +89,88 @@ class HomeSeerDevice:
             return
         elif self._value_update_callback is not None:
             self._value_update_callback()
+
+
+class GenericSwitch(HomeSeerDevice):
+    @property
+    def is_on(self):
+        return self.value > self._off_value
+
+    async def on(self):
+        params = {
+            "request": "controldevicebyvalue",
+            "ref": self.ref,
+            "value": self._on_value,
+        }
+
+        await self._request("get", params=params)
+
+    async def off(self):
+        params = {
+            "request": "controldevicebyvalue",
+            "ref": self.ref,
+            "value": self._off_value,
+        }
+
+        await self._request("get", params=params)
+
+
+class GenericSwitchMultilevel(GenericSwitch):
+    @property
+    def dim_percent(self):
+        return self.value / self._on_value
+
+    async def dim(self, percent: int):
+        value = int(self._on_value * (percent / 100))
+
+        params = {"request": "controldevicebyvalue", "ref": self.ref, "value": value}
+
+        await self._request("get", params=params)
+
+
+class GenericSensor(HomeSeerDevice):
+    pass
+
+
+class GenericMultiLevelSensor(GenericSensor):
+    pass
+
+
+class GenericBatterySensor(GenericSensor):
+    pass
+
+
+class GenericHumiditySensor(GenericSensor):
+    pass
+
+
+class GenericHumiditySensor(GenericSensor):
+    pass
+
+
+class GenericLuminanceSensor(GenericSensor):
+    pass
+
+
+class GenericFanSensor(GenericSensor):
+    pass
+
+
+class GenericOperatingStateSensor(GenericSensor):
+    pass
+
+
+class GenericPowerSensor(GenericSensor):
+    pass
+
+
+class GenericBinarySensor(HomeSeerDevice):
+    pass
+
+
+class GenericDoorLock(HomeSeerDevice):
+    pass
+
+
+class GenericCover(HomeSeerDevice):
+    pass

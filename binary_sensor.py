@@ -2,7 +2,7 @@
 Support for HomeSeer binary-type devices.
 """
 
-from .pyhs3ng import HASS_BINARY_SENSORS, STATE_LISTENING
+from .pyhs3ng.device import GenericBinarySensor
 
 from .hoomseer import HomeseerEntity
 from homeassistant.components.binary_sensor import BinarySensorEntity
@@ -18,10 +18,10 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     homeseer = hass.data[DOMAIN]
 
     for device in homeseer.devices:
-        if device.device_type_string in HASS_BINARY_SENSORS:
+        if issubclass(type(device), GenericBinarySensor):
             dev = HSBinarySensor(device, homeseer)
             binary_sensor_devices.append(dev)
-            _LOGGER.info(f"Added HomeSeer binary-sensor-type device: {dev.name}")
+            _LOGGER.info(f"Added HomeSeer binary-senssor-type device: {dev.name}")
 
     async_add_entities(binary_sensor_devices)
 

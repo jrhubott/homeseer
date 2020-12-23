@@ -2,7 +2,7 @@
 Support for HomeSeer light-type devices.
 """
 
-from .pyhs3ng import HASS_LIGHTS, STATE_LISTENING
+from .pyhs3ng.device import GenericSwitchMultilevel
 from .hoomseer import HomeseerEntity
 from homeassistant.components.light import (
     ATTR_BRIGHTNESS,
@@ -21,7 +21,7 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     homeseer = hass.data[DOMAIN]
 
     for device in homeseer.devices:
-        if device.device_type_string in HASS_LIGHTS:
+        if issubclass(type(device), GenericSwitchMultilevel):
             dev = HSLight(device, homeseer)
             light_devices.append(dev)
             _LOGGER.info(f"Added HomeSeer light-type device: {dev.name}")

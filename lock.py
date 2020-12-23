@@ -2,7 +2,9 @@
 Support for HomeSeer lock-type devices.
 """
 
-from .pyhs3ng import HASS_LOCKS, STATE_LISTENING
+from config.custom_components.homeseer.hoomseer import HomeseerEntity
+from .pyhs3ng.device import GenericDoorLock
+
 
 from homeassistant.components.lock import LockEntity
 
@@ -17,7 +19,7 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     homeseer = hass.data[DOMAIN]
 
     for device in homeseer.devices:
-        if device.device_type_string in HASS_LOCKS:
+        if issubclass(type(device), GenericDoorLock):
             dev = HSLock(device, homeseer)
             lock_devices.append(dev)
             _LOGGER.info(f"Added HomeSeer lock-type device: {dev.name}")
@@ -25,41 +27,12 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     async_add_entities(lock_devices)
 
 
-class HSLock(LockEntity):
+class HSLock(HomeseerEntity, LockEntity):
     """Representation of a HomeSeer lock device."""
 
     def __init__(self, device, connection):
         self._device = device
         self._connection = connection
-
-    @property
-    def available(self):
-        """Return whether the device is available."""
-        return self._connection.api.state == STATE_LISTENING
-
-    @property
-    def device_state_attributes(self):
-        attr = {
-            "Device Ref": self._device.ref,
-            "Location": self._device.location,
-            "Location 2": self._device.location2,
-        }
-        return attr
-
-    @property
-    def unique_id(self):
-        """Return a unique ID for the device."""
-        return f"{self._connection.namespace}-{self._device.ref}"
-
-    @property
-    def name(self):
-        """Return the name of the device."""
-        return self._connection.name_template.async_render(device=self._device).strip()
-
-    @property
-    def should_poll(self):
-        """No polling needed."""
-        return False
 
     @property
     def is_locked(self):
@@ -71,7 +44,3 @@ class HSLock(LockEntity):
 
     async def async_unlock(self, **kwargs):
         await self._device.unlock()
-
-    async def async_added_to_hass(self):
-        """Register value update callback."""
-        self._device.register_update_callback(self.async_schedule_update_ha_state)

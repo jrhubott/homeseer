@@ -2,7 +2,7 @@
 Support for HomeSeer switch-type devices.
 """
 
-from .pyhs3ng import HASS_SWITCHES, STATE_LISTENING
+from .pyhs3ng.device import GenericSwitch, GenericSwitchMultilevel
 from .hoomseer import HomeseerEntity
 
 from homeassistant.components.switch import SwitchEntity
@@ -18,7 +18,10 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     homeseer = hass.data[DOMAIN]
 
     for device in homeseer.devices:
-        if device.device_type_string in HASS_SWITCHES:
+        if (
+            issubclass(type(device), GenericSwitch)
+            and issubclass(type(device), GenericSwitchMultilevel) == False
+        ):
             dev = HSSwitch(device, homeseer)
             switch_devices.append(dev)
             _LOGGER.info(f"Added HomeSeer switch-type device: {dev.name}")

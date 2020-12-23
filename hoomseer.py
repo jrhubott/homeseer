@@ -27,8 +27,7 @@ class HomeseerEntity:
         attr = {
             "HS Ref": self._device.ref,
             "HS Name": self._device.name,
-            "HS Location": self._device.location,
-            "HS Group": self._device.location2,
+            "HS Location": f"{self._device.location} / {self._device.location2}",
             "HS Type": self._device.device_type_string,
         }
         return attr

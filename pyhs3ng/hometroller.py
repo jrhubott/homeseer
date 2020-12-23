@@ -4,6 +4,7 @@ Allows sending commands via JSON API and listening for device changes via ASCII 
 """
 
 from asyncio import TimeoutError
+from .factory import get_device
 from .device import HomeSeerDevice
 from aiohttp import BasicAuth, ContentTypeError
 from typing import Union
@@ -23,8 +24,6 @@ from .const import (
 )
 from .events import HomeSeerEvent
 from .listener import ASCIIListener
-from .zwave import get_zwave_device
-from .insteon import get_insteon_device
 
 
 class HomeTroller:
@@ -123,9 +122,8 @@ class HomeTroller:
             control_data = result["Devices"]
 
             for device in all_devices:
-                dev = get_zwave_device(device, control_data, self._request)
-                if dev is None:
-                    dev = get_insteon_device(device, control_data, self._request)
+                dev = get_device(device, control_data, self._request)
+
                 if dev is not None:
                     self.devices[dev.ref] = dev
                 else:

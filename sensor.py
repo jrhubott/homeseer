@@ -2,16 +2,17 @@
 Support for HomeSeer sensor-type devices.
 """
 
+from .pyhs3ng.device import (
+    GenericBatterySensor,
+    GenericFanSensor,
+    GenericHumiditySensor,
+    GenericLuminanceSensor,
+    GenericMultiLevelSensor,
+    GenericOperatingStateSensor,
+    GenericPowerSensor,
+    GenericSensor,
+)
 from .pyhs3ng import (
-    DEVICE_ZWAVE_BATTERY,
-    DEVICE_ZWAVE_FAN_STATE,
-    DEVICE_ZWAVE_LUMINANCE,
-    DEVICE_ZWAVE_OPERATING_STATE,
-    DEVICE_ZWAVE_RELATIVE_HUMIDITY,
-    DEVICE_ZWAVE_SENSOR_MULTILEVEL,
-    DEVICE_ZWAVE_TEMPERATURE,
-    HASS_SENSORS,
-    STATE_LISTENING,
     HS_UNIT_CELSIUS,
     HS_UNIT_FAHRENHEIT,
     HS_UNIT_LUX,
@@ -21,8 +22,10 @@ from .pyhs3ng import (
 
 from homeassistant.const import (
     DEVICE_CLASS_BATTERY,
+    DEVICE_CLASS_ENERGY,
     DEVICE_CLASS_HUMIDITY,
     DEVICE_CLASS_ILLUMINANCE,
+    DEVICE_CLASS_POWER,
     DEVICE_CLASS_TEMPERATURE,
     LIGHT_LUX,
     TEMP_CELSIUS,
@@ -43,10 +46,10 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     homeseer = hass.data[DOMAIN]
 
     for device in homeseer.devices:
-        if device.device_type_string in HASS_SENSORS:
+        if issubclass(type(device), GenericSensor):
             dev = get_sensor_device(device, homeseer)
             sensor_devices.append(dev)
-            _LOGGER.info(f"Added HomeSeer sensor-type device: {dev.name}")
+            _LOGGER.info(f"Added HomeSeer senssor-type device: {dev.name}")
 
     async_add_entities(sensor_devices)
 
@@ -59,20 +62,15 @@ class HSSensor(HomeseerEntity, Entity):
         self._connection = connection
         self._uom = None
 
+    async def async_added_to_hass(self):
+        """Register value update callback."""
+        self._device.register_update_callback(self.async_schedule_update_ha_state)
+        self._uom = await parse_uom(self._device)
+
     @property
     def state(self):
         """Return the state of the device."""
         return self._device.value
-
-    @property
-    def should_poll(self):
-        """No polling needed."""
-        return False
-
-    async def async_added_to_hass(self):
-        """Register value update callback and cache unit of measure."""
-        self._device.register_update_callback(self.async_schedule_update_ha_state)
-        self._uom = await parse_uom(self._device)
 
 
 class HSBattery(HSSensor):
@@ -227,20 +225,32 @@ class HSSensorMultilevel(HSSensor):
         return None
 
 
+class HSSensorPower(HSSensor):
+    @property
+    def device_class(self):
+        return DEVICE_CLASS_ENERGY
+
+    @property
+    def unit_of_measurement(self):
+        return "watts"
+
+
 def get_sensor_device(device, homeseer):
     """Return the proper sensor object based on device type."""
-    if device.device_type_string == DEVICE_ZWAVE_BATTERY:
-        return HSBattery(device, homeseer)
-    elif device.device_type_string == DEVICE_ZWAVE_RELATIVE_HUMIDITY:
+
+    if issubclass(type(device), GenericMultiLevelSensor):
+        return HSSensorMultilevel(device, homeseer)
+    if issubclass(type(device), GenericHumiditySensor):
         return HSHumidity(device, homeseer)
-    elif device.device_type_string == DEVICE_ZWAVE_LUMINANCE:
+    if issubclass(type(device), GenericBatterySensor):
+        return HSBattery(device, homeseer)
+    if issubclass(type(device), GenericLuminanceSensor):
         return HSLuminance(device, homeseer)
-    elif device.device_type_string == DEVICE_ZWAVE_FAN_STATE:
+    if issubclass(type(device), GenericFanSensor):
         return HSFanState(device, homeseer)
-    elif device.device_type_string == DEVICE_ZWAVE_OPERATING_STATE:
+    if issubclass(type(device), GenericOperatingStateSensor):
         return HSOperatingState(device, homeseer)
-    elif device.device_type_string == DEVICE_ZWAVE_SENSOR_MULTILEVEL:
-        return HSSensorMultilevel(device, homeseer)
-    elif device.device_type_string == DEVICE_ZWAVE_TEMPERATURE:
-        return HSSensorMultilevel(device, homeseer)
+    if issubclass(type(device), GenericPowerSensor):
+        return HSSensorPower(device, homeseer)
+
     return HSSensor(device, homeseer)
