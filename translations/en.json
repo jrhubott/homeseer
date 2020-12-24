@@ -1,0 +1,48 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
+    },
+    "error": {
+      "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]",
+      "invalid_auth": "[%key:common::config_flow::error::invalid_auth%]",
+      "mac_address_required": "MAC Address required for firmware below 2.1.9 (4)",
+      "unknown": "[%key:common::config_flow::error::unknown%]"
+    },
+    "step": {
+      "user": {
+        "data": {
+          "name": "Name",
+          "host": "Host",
+          "namespace": "Namespace",
+          "username": "Username",
+          "password": "Password",
+          "http_port": "HTTP port",
+          "ascii_port": "ASCII port",
+          "name_template": "Name template",
+          "allow_events": "Allow events"
+        },
+        "title": "Connect to the Homeseer controller"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "name": "Name",
+          "host": "Host",
+          "namespace": "Namespace",
+          "username": "Username",
+          "password": "Password",
+          "http_port": "HTTP port",
+          "ascii_port": "ASCII port",
+          "name_template": "Name template",
+          "allow_events": "Allow events"
+        },
+      "title": "Homeseer Options"
+      }
+    }
+  },
+  "title": "Homeseer Integration"
+}

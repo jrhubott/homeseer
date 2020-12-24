@@ -21,6 +21,7 @@ from homeassistant.const import (
 )
 from homeassistant.core import EventOrigin, HomeAssistant
 from homeassistant.helpers import aiohttp_client, discovery
+from homeassistant.helpers.template import Template
 
 from .const import (
     _LOGGER,
@@ -57,9 +58,10 @@ async def async_setup_entry(hass: HomeAssistant, config: ConfigEntry):
     password = config.data.get(CONF_PASSWORD)
     http_port = config.data.get(CONF_HTTP_PORT)
     ascii_port = config.data.get(CONF_ASCII_PORT)
-    name_template = config.data.get(CONF_NAME_TEMPLATE)
+    name_template = DEFAULT_NAME_TEMPLATE  # config.data.get(CONF_NAME_TEMPLATE)
     allow_events = config.data.get(CONF_ALLOW_EVENTS)
 
+    name_template = Template(name_template)
     name_template.hass = hass
 
     homeseer = HSConnection(
@@ -90,12 +92,12 @@ async def async_setup_entry(hass: HomeAssistant, config: ConfigEntry):
     if not allow_events:
         HOMESEER_PLATFORMS.remove("scene")
 
-    for platform in HOMESEER_PLATFORMS:
-        hass.async_create_task(
-            discovery.async_load_platform(hass, platform, DOMAIN, {}, config)
-        )
-
     hass.data[DOMAIN] = homeseer
+
+    for component in HOMESEER_PLATFORMS:
+        hass.async_create_task(
+            hass.config_entries.async_forward_entry_setup(config, component)
+        )
 
     hass.bus.async_listen_once("homeassistant_stop", homeseer.stop)
 

@@ -21,7 +21,7 @@ DEFAULT_HTTP_PORT = 80
 DEFAULT_PASSWORD = "xleter"
 DEFAULT_USERNAME = "admin"
 DEFAULT_ASCII_PORT = 11000
-DEFAULT_NAME_TEMPLATE = "{{ device.location2 }} {{ device.location }} {{ device.name }}"
+DEFAULT_NAME_TEMPLATE = "{{ device.location }} {{ device.name }}"
 DEFAULT_ALLOW_EVENTS = True
 
 HOMESEER_PLATFORMS = [

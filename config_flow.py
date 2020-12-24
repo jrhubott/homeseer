@@ -1,3 +1,4 @@
+from homeassistant.core import callback
 import logging
 from typing import Optional
 
@@ -16,6 +17,7 @@ from homeassistant.const import (
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.util import slugify
 import homeassistant.helpers.config_validation as cv
+from homeassistant import config_entries, core
 
 from .const import (
     DOMAIN,
@@ -50,8 +52,6 @@ DEVICE_SCHEMA = vol.Schema(
 
 
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    """Handle a config flow for OpenSprinkler."""
-
     VERSION = 1
     CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_POLL
 
@@ -61,22 +61,10 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None:
 
             name = user_input[CONF_NAME]
-            host = user_input[CONF_HOST]
-            password = user_input[CONF_PASSWORD]
-            username = user_input[CONF_USERNAME]
 
             return self.async_create_entry(
                 title=name,
-                data={
-                    CONF_HOST: host,
-                    CONF_NAMESPACE: user_input[CONF_NAMESPACE],
-                    CONF_USERNAME: username,
-                    CONF_PASSWORD: password,
-                    CONF_HTTP_PORT: user_input[CONF_HTTP_PORT],
-                    CONF_ASCII_PORT: user_input[CONF_ASCII_PORT],
-                    CONF_NAME_TEMPLATE: user_input[CONF_NAME_TEMPLATE],
-                    CONF_ALLOW_EVENTS: user_input[CONF_ALLOW_EVENTS],
-                },
+                data=user_input,
             )
 
         return self.async_show_form(
@@ -86,3 +74,37 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_import(self, user_input):
         """Handle import."""
         return await self.async_step_user(user_input)
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry):
+        return OptionsFlowHandler(config_entry)
+
+
+class OptionsFlowHandler(config_entries.OptionsFlow):
+    def __init__(self, config_entry):
+        """Initialize Hue options flow."""
+        self.config_entry = config_entry
+
+    async def async_step_init(self, user_input=None):
+        errors = {}
+
+        """Manage the options."""
+        if user_input is not None:
+
+            return self.async_create_entry(
+                title="",
+                data=user_input,
+            )
+
+        return self.async_show_form(
+            step_id="init",
+            data_schema=vol.Schema(
+                {
+                    vol.Optional(
+                        CONF_NAME_TEMPLATE,
+                        default=self.config_entry.options.get(CONF_NAME_TEMPLATE),
+                    ): str,
+                }
+            ),
+        )
