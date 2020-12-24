@@ -1,6 +1,7 @@
 {
   "domain": "homeseer",
   "name": "HomeSeer",
+  "config_flow": true,
   "documentation": "https://github.com/jrhubott/homeseer",
   "dependencies": [],
   "codeowners": ["@marthoc"],

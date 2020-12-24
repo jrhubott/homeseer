@@ -5,6 +5,7 @@ For more details about this custom component, please refer to the documentation 
 https://github.com/marthoc/homeseer
 """
 import asyncio
+from homeassistant.config_entries import ConfigEntry
 
 import voluptuous as vol
 from .pyhs3ng import HomeTroller, STATE_LISTENING
@@ -18,7 +19,7 @@ from homeassistant.const import (
     CONF_PASSWORD,
     CONF_USERNAME,
 )
-from homeassistant.core import EventOrigin
+from homeassistant.core import EventOrigin, HomeAssistant
 from homeassistant.helpers import aiohttp_client, discovery
 
 from .const import (
@@ -39,42 +40,25 @@ from .const import (
 )
 
 
-REQUIREMENTS = ["pyhs3==0.11"]
-
-CONFIG_SCHEMA = vol.Schema(
-    {
-        DOMAIN: vol.Schema(
-            {
-                vol.Required(CONF_HOST): cv.string,
-                vol.Required(CONF_NAMESPACE): cv.string,
-                vol.Optional(CONF_PASSWORD, default=DEFAULT_PASSWORD): cv.string,
-                vol.Optional(CONF_USERNAME, default=DEFAULT_USERNAME): cv.string,
-                vol.Optional(CONF_HTTP_PORT, default=DEFAULT_HTTP_PORT): cv.port,
-                vol.Optional(CONF_ASCII_PORT, default=DEFAULT_ASCII_PORT): cv.port,
-                vol.Optional(
-                    CONF_NAME_TEMPLATE, default=DEFAULT_NAME_TEMPLATE
-                ): cv.template,
-                vol.Optional(
-                    CONF_ALLOW_EVENTS, default=DEFAULT_ALLOW_EVENTS
-                ): cv.boolean,
-            }
-        )
-    },
-    extra=vol.ALLOW_EXTRA,
-)
+REQUIREMENTS = []
 
 
 async def async_setup(hass, config):
+
+    return True
+
+
+async def async_setup_entry(hass: HomeAssistant, config: ConfigEntry):
     """Set up the HomeSeer component."""
-    config = config.get(DOMAIN)
-    host = config[CONF_HOST]
-    namespace = config[CONF_NAMESPACE]
-    username = config[CONF_USERNAME]
-    password = config[CONF_PASSWORD]
-    http_port = config[CONF_HTTP_PORT]
-    ascii_port = config[CONF_ASCII_PORT]
-    name_template = config[CONF_NAME_TEMPLATE]
-    allow_events = config[CONF_ALLOW_EVENTS]
+    #  config = config.get(DOMAIN)
+    host = config.data.get(CONF_HOST)
+    namespace = config.data.get(CONF_NAMESPACE)
+    username = config.data.get(CONF_USERNAME)
+    password = config.data.get(CONF_PASSWORD)
+    http_port = config.data.get(CONF_HTTP_PORT)
+    ascii_port = config.data.get(CONF_ASCII_PORT)
+    name_template = config.data.get(CONF_NAME_TEMPLATE)
+    allow_events = config.data.get(CONF_ALLOW_EVENTS)
 
     name_template.hass = hass
 
