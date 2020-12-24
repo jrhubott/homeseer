@@ -5,6 +5,7 @@ For more details about this custom component, please refer to the documentation 
 https://github.com/marthoc/homeseer
 """
 import asyncio
+from homeassistant import data_entry_flow
 from homeassistant.config_entries import ConfigEntry
 
 import voluptuous as vol
@@ -50,6 +51,18 @@ async def async_setup(hass, config):
 
 
 async def async_setup_entry(hass: HomeAssistant, config: ConfigEntry):
+
+    # migrate to options for some of the config
+    if CONF_NAME_TEMPLATE not in config.options and CONF_NAME_TEMPLATE in config.data:
+
+        options = {
+            **config.options,
+            CONF_NAME_TEMPLATE: config.data[CONF_NAME_TEMPLATE],
+        }
+        data = config.data.copy()
+        data.pop(CONF_NAME_TEMPLATE)
+        hass.config_entries.async_update_entry(config, data=data, options=options)
+
     """Set up the HomeSeer component."""
     #  config = config.get(DOMAIN)
     host = config.data.get(CONF_HOST)
@@ -58,7 +71,7 @@ async def async_setup_entry(hass: HomeAssistant, config: ConfigEntry):
     password = config.data.get(CONF_PASSWORD)
     http_port = config.data.get(CONF_HTTP_PORT)
     ascii_port = config.data.get(CONF_ASCII_PORT)
-    name_template = DEFAULT_NAME_TEMPLATE  # config.data.get(CONF_NAME_TEMPLATE)
+    name_template = config.options.get(CONF_NAME_TEMPLATE)
     allow_events = config.data.get(CONF_ALLOW_EVENTS)
 
     name_template = Template(name_template)
