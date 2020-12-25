@@ -26,7 +26,8 @@ DEFAULT_ASCII_PORT = 11000
 DEFAULT_NAME_TEMPLATE = "{{ device.location }} {{ device.name }}"
 DEFAULT_ALLOW_EVENTS = True
 DEFAULT_NAMESPACE = "homeseer"
-
+DEFAULT_NAME = "Homeseer"
+DEFAULT_HOST = "salix.home.rhusoft.com"
 HOMESEER_PLATFORMS = [
     "binary_sensor",
     "cover",

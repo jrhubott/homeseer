@@ -27,6 +27,7 @@ from homeassistant.helpers.template import Template
 
 from .const import (
     DATA_CLIENT,
+    DEFAULT_NAME,
     _LOGGER,
     CONF_ALLOW_EVENTS,
     CONF_ASCII_PORT,
@@ -59,6 +60,24 @@ async def async_setup(hass, config):
     # Store config for use during entry setup:
     hass.data[DOMAIN][PATH_CONFIG] = conf
 
+    hass.async_create_task(
+        hass.config_entries.flow.async_init(
+            DOMAIN,
+            context={"source": SOURCE_IMPORT},
+            data={
+                CONF_NAME: DEFAULT_NAME,
+                CONF_HOST: conf[CONF_HOST],
+                CONF_NAMESPACE: conf[CONF_NAMESPACE],
+                CONF_USERNAME: conf[CONF_USERNAME],
+                CONF_PASSWORD: conf[CONF_PASSWORD],
+                CONF_HTTP_PORT: conf[CONF_HTTP_PORT],
+                CONF_ASCII_PORT: conf[CONF_ASCII_PORT],
+                CONF_NAME_TEMPLATE: conf[CONF_NAME_TEMPLATE],
+                CONF_ALLOW_EVENTS: conf[CONF_ALLOW_EVENTS],
+            },
+        )
+    )
+
     return True
 
 
@@ -66,7 +85,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
 
     if not config_entry.unique_id:
         hass.config_entries.async_update_entry(
-            config_entry, unique_id=config_entry.data[CONF_NAME]
+            config_entry, unique_id=config_entry.data[CONF_NAMESPACE]
         )
 
     # migrate to options for some of the config

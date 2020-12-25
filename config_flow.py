@@ -20,6 +20,9 @@ import homeassistant.helpers.config_validation as cv
 from homeassistant import config_entries, core
 
 from .const import (
+    DEFAULT_HOST,
+    DEFAULT_NAME,
+    DEFAULT_NAMESPACE,
     DOMAIN,
     CONF_NAMESPACE,
     DEFAULT_PASSWORD,
@@ -38,15 +41,15 @@ _LOGGER = logging.getLogger(__name__)
 
 DEVICE_SCHEMA = vol.Schema(
     {
-        vol.Required(CONF_NAME, default="Homeseer"): cv.string,
-        vol.Required(CONF_HOST, default="salix.home.rhusoft.com"): cv.string,
-        vol.Optional(CONF_NAMESPACE, default="homeseer"): cv.string,
-        vol.Optional(CONF_USERNAME, default=DEFAULT_USERNAME): cv.string,
-        vol.Optional(CONF_PASSWORD, default=DEFAULT_PASSWORD): cv.string,
-        vol.Optional(CONF_HTTP_PORT, default=DEFAULT_HTTP_PORT): cv.port,
-        vol.Optional(CONF_ASCII_PORT, default=DEFAULT_ASCII_PORT): cv.port,
-        vol.Optional(CONF_NAME_TEMPLATE, default=DEFAULT_NAME_TEMPLATE): cv.string,
-        vol.Optional(CONF_ALLOW_EVENTS, default=DEFAULT_ALLOW_EVENTS): cv.boolean,
+        vol.Required(CONF_NAME, default=DEFAULT_NAME): cv.string,
+        vol.Required(CONF_HOST, default=DEFAULT_HOST): cv.string,
+        vol.Required(CONF_NAMESPACE, default=DEFAULT_NAMESPACE): cv.string,
+        vol.Required(CONF_USERNAME, default=DEFAULT_USERNAME): cv.string,
+        vol.Required(CONF_PASSWORD, default=DEFAULT_PASSWORD): cv.string,
+        vol.Required(CONF_HTTP_PORT, default=DEFAULT_HTTP_PORT): cv.port,
+        vol.Required(CONF_ASCII_PORT, default=DEFAULT_ASCII_PORT): cv.port,
+        vol.Required(CONF_NAME_TEMPLATE, default=DEFAULT_NAME_TEMPLATE): cv.string,
+        vol.Required(CONF_ALLOW_EVENTS, default=DEFAULT_ALLOW_EVENTS): cv.boolean,
     }
 )
 
@@ -59,6 +62,9 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors = {}
 
         if user_input is not None:
+
+            await self.async_set_unique_id(user_input[CONF_NAMESPACE])
+            self._abort_if_unique_id_configured()
 
             name = user_input[CONF_NAME]
 
@@ -101,7 +107,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             step_id="init",
             data_schema=vol.Schema(
                 {
-                    vol.Optional(
+                    vol.Required(
                         CONF_NAME_TEMPLATE,
                         default=self.config_entry.options.get(CONF_NAME_TEMPLATE),
                     ): str,
