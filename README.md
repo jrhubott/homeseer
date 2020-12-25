@@ -32,8 +32,8 @@ HomeSeer devices of the type "Z-Wave Central Scene" will not create an entity in
 
 0. Enable the ASCII connection in HomeSeer (required to receive device updates in Home Assistant).
 1. Create the directory `custom_components` inside your Home Assistant config directory.
-2. `cd` into the `custom_components` directory and do `git clone https://github.com/marthoc/homeseer`.
-3. Add the below config to your configuration.yaml and restart Home Assistant.
+2. `cd` into the `custom_components` directory and do `git clone https://github.com/jrhubott/homeseer`.
+3. Start Home Assistant and use the add integration feature to add the Homeseer Integration
 4. Problems with certain devices (i.e. not supported yet) will be reported in the debug logs for the component/pyHS3.
 
 ## Upgrade
@@ -41,8 +41,9 @@ HomeSeer devices of the type "Z-Wave Central Scene" will not create an entity in
 0. Stop Home Assistant
 1. `cd` into the `custom_components/homeseer` directory and do `git pull`.
 2. Start Home Assistant
+3. If you were using the old yaml.config it will be automatically converted into a UI integration and you can delete the config for the yaml file after starting Home Assistant
 
-## configuration.yaml example
+## configuration.yaml example if you want to use the old style yaml.config
 
 ```yaml
 homeseer:
