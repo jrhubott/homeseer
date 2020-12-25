@@ -3,20 +3,20 @@ Support for HomeSeer lock-type devices.
 """
 
 from .hoomseer import HomeseerEntity
-from .pyhs3ng.device import GenericDoorLock
+from pyhs3ng.device import GenericDoorLock
 
 
 from homeassistant.components.lock import LockEntity
 
-from .const import _LOGGER, DOMAIN
+from .const import DATA_CLIENT, _LOGGER, DOMAIN
 
 DEPENDENCIES = ["homeseer"]
 
 
-async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
+async def async_setup_entry(hass, config_entry, async_add_entities):
     """Set up HomeSeer lock-type devices."""
     lock_devices = []
-    homeseer = hass.data[DOMAIN]
+    homeseer = hass.data[DOMAIN][DATA_CLIENT][config_entry.entry_id]
 
     for device in homeseer.devices:
         if issubclass(type(device), GenericDoorLock):

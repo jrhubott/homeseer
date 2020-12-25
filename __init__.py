@@ -5,23 +5,29 @@ For more details about this custom component, please refer to the documentation 
 https://github.com/marthoc/homeseer
 """
 import asyncio
+from homeassistant import data_entry_flow
+from homeassistant.config_entries import ConfigEntry, PATH_CONFIG, SOURCE_IMPORT
 
 import voluptuous as vol
-from .pyhs3ng import HomeTroller, STATE_LISTENING
-from .pyhs3ng.device import GenericEvent
+from pyhs3ng import HomeTroller, STATE_LISTENING
+from pyhs3ng.device import GenericEvent
 
 import homeassistant.helpers.config_validation as cv
 from homeassistant.const import (
     CONF_EVENT,
     CONF_HOST,
     CONF_ID,
+    CONF_NAME,
     CONF_PASSWORD,
     CONF_USERNAME,
 )
-from homeassistant.core import EventOrigin
+from homeassistant.core import EventOrigin, HomeAssistant
 from homeassistant.helpers import aiohttp_client, discovery
+from homeassistant.helpers.template import Template
 
 from .const import (
+    DATA_CLIENT,
+    DEFAULT_NAME,
     _LOGGER,
     CONF_ALLOW_EVENTS,
     CONF_ASCII_PORT,
@@ -39,43 +45,75 @@ from .const import (
 )
 
 
-REQUIREMENTS = ["pyhs3==0.11"]
-
-CONFIG_SCHEMA = vol.Schema(
-    {
-        DOMAIN: vol.Schema(
-            {
-                vol.Required(CONF_HOST): cv.string,
-                vol.Required(CONF_NAMESPACE): cv.string,
-                vol.Optional(CONF_PASSWORD, default=DEFAULT_PASSWORD): cv.string,
-                vol.Optional(CONF_USERNAME, default=DEFAULT_USERNAME): cv.string,
-                vol.Optional(CONF_HTTP_PORT, default=DEFAULT_HTTP_PORT): cv.port,
-                vol.Optional(CONF_ASCII_PORT, default=DEFAULT_ASCII_PORT): cv.port,
-                vol.Optional(
-                    CONF_NAME_TEMPLATE, default=DEFAULT_NAME_TEMPLATE
-                ): cv.template,
-                vol.Optional(
-                    CONF_ALLOW_EVENTS, default=DEFAULT_ALLOW_EVENTS
-                ): cv.boolean,
-            }
-        )
-    },
-    extra=vol.ALLOW_EXTRA,
-)
+REQUIREMENTS = []
 
 
 async def async_setup(hass, config):
-    """Set up the HomeSeer component."""
-    config = config.get(DOMAIN)
-    host = config[CONF_HOST]
-    namespace = config[CONF_NAMESPACE]
-    username = config[CONF_USERNAME]
-    password = config[CONF_PASSWORD]
-    http_port = config[CONF_HTTP_PORT]
-    ascii_port = config[CONF_ASCII_PORT]
-    name_template = config[CONF_NAME_TEMPLATE]
-    allow_events = config[CONF_ALLOW_EVENTS]
+    hass.data[DOMAIN] = {}
+    hass.data[DOMAIN][DATA_CLIENT] = {}
 
+    if DOMAIN not in config:
+        return True
+
+    conf = config[DOMAIN]
+
+    # Store config for use during entry setup:
+    hass.data[DOMAIN][PATH_CONFIG] = conf
+
+    hass.async_create_task(
+        hass.config_entries.flow.async_init(
+            DOMAIN,
+            context={"source": SOURCE_IMPORT},
+            data={
+                CONF_NAME: DEFAULT_NAME,
+                CONF_HOST: conf[CONF_HOST],
+                CONF_NAMESPACE: conf[CONF_NAMESPACE],
+                CONF_USERNAME: conf[CONF_USERNAME],
+                CONF_PASSWORD: conf[CONF_PASSWORD],
+                CONF_HTTP_PORT: conf[CONF_HTTP_PORT],
+                CONF_ASCII_PORT: conf[CONF_ASCII_PORT],
+                CONF_NAME_TEMPLATE: conf[CONF_NAME_TEMPLATE],
+                CONF_ALLOW_EVENTS: conf[CONF_ALLOW_EVENTS],
+            },
+        )
+    )
+
+    return True
+
+
+async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
+
+    if not config_entry.unique_id:
+        hass.config_entries.async_update_entry(
+            config_entry, unique_id=config_entry.data[CONF_NAMESPACE]
+        )
+
+    # migrate to options for some of the config
+    if (
+        CONF_NAME_TEMPLATE not in config_entry.options
+        and CONF_NAME_TEMPLATE in config_entry.data
+    ):
+
+        options = {
+            **config_entry.options,
+            CONF_NAME_TEMPLATE: config_entry.data[CONF_NAME_TEMPLATE],
+        }
+        data = config_entry.data.copy()
+        data.pop(CONF_NAME_TEMPLATE)
+        hass.config_entries.async_update_entry(config_entry, data=data, options=options)
+
+    """Set up the HomeSeer component."""
+    #  config = config.get(DOMAIN)
+    host = config_entry.data.get(CONF_HOST)
+    namespace = config_entry.data.get(CONF_NAMESPACE)
+    username = config_entry.data.get(CONF_USERNAME)
+    password = config_entry.data.get(CONF_PASSWORD)
+    http_port = config_entry.data.get(CONF_HTTP_PORT)
+    ascii_port = config_entry.data.get(CONF_ASCII_PORT)
+    name_template = config_entry.options.get(CONF_NAME_TEMPLATE)
+    allow_events = config_entry.data.get(CONF_ALLOW_EVENTS)
+
+    name_template = Template(name_template)
     name_template.hass = hass
 
     homeseer = HSConnection(
@@ -106,12 +144,12 @@ async def async_setup(hass, config):
     if not allow_events:
         HOMESEER_PLATFORMS.remove("scene")
 
-    for platform in HOMESEER_PLATFORMS:
-        hass.async_create_task(
-            discovery.async_load_platform(hass, platform, DOMAIN, {}, config)
-        )
+    hass.data[DOMAIN][DATA_CLIENT][config_entry.entry_id] = homeseer
 
-    hass.data[DOMAIN] = homeseer
+    for component in HOMESEER_PLATFORMS:
+        hass.async_create_task(
+            hass.config_entries.async_forward_entry_setup(config_entry, component)
+        )
 
     hass.bus.async_listen_once("homeassistant_stop", homeseer.stop)
 
@@ -192,3 +230,24 @@ class HSRemote:
         """Fire the event."""
         data = {CONF_ID: self._device.ref, CONF_EVENT: self._device.value}
         self._hass.bus.async_fire(self._event, data, EventOrigin.remote)
+
+
+async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry):
+
+    homeseer = hass.data[DOMAIN][DATA_CLIENT][config_entry.entry_id]
+
+    await homeseer.stop()
+
+    hass.data[DOMAIN][DATA_CLIENT].pop(config_entry.entry_id)
+
+    """Unload a config entry."""
+    unload_ok = all(
+        await asyncio.gather(
+            *[
+                hass.config_entries.async_forward_entry_unload(config_entry, component)
+                for component in HOMESEER_PLATFORMS
+            ]
+        )
+    )
+
+    return unload_ok

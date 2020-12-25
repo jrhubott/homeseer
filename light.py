@@ -2,7 +2,7 @@
 Support for HomeSeer light-type devices.
 """
 
-from .pyhs3ng.device import GenericSwitchMultilevel
+from pyhs3ng.device import GenericSwitchMultilevel
 from .hoomseer import HomeseerEntity
 from homeassistant.components.light import (
     ATTR_BRIGHTNESS,
@@ -10,15 +10,15 @@ from homeassistant.components.light import (
     LightEntity,
 )
 
-from .const import _LOGGER, DOMAIN
+from .const import DATA_CLIENT, _LOGGER, DOMAIN
 
 DEPENDENCIES = ["homeseer"]
 
 
-async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
+async def async_setup_entry(hass, config_entry, async_add_entities):
     """Set up HomeSeer light-type devices."""
     light_devices = []
-    homeseer = hass.data[DOMAIN]
+    homeseer = hass.data[DOMAIN][DATA_CLIENT][config_entry.entry_id]
 
     for device in homeseer.devices:
         if issubclass(type(device), GenericSwitchMultilevel):
