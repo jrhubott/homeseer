@@ -2,7 +2,7 @@
 Support for HomeSeer switch-type devices.
 """
 
-from .pyhs3ng.device import GenericSwitch, GenericSwitchMultilevel
+from pyhs3ng.device import GenericSwitch, GenericSwitchMultilevel
 from .hoomseer import HomeseerEntity
 
 from homeassistant.components.switch import SwitchEntity

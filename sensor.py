@@ -2,7 +2,7 @@
 Support for HomeSeer sensor-type devices.
 """
 
-from .pyhs3ng.device import (
+from pyhs3ng.device import (
     GenericBatterySensor,
     GenericFanSensor,
     GenericHumiditySensor,
@@ -12,7 +12,7 @@ from .pyhs3ng.device import (
     GenericPowerSensor,
     GenericSensor,
 )
-from .pyhs3ng import (
+from pyhs3ng import (
     HS_UNIT_CELSIUS,
     HS_UNIT_FAHRENHEIT,
     HS_UNIT_LUX,

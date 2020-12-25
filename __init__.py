@@ -9,8 +9,8 @@ from homeassistant import data_entry_flow
 from homeassistant.config_entries import ConfigEntry, PATH_CONFIG, SOURCE_IMPORT
 
 import voluptuous as vol
-from .pyhs3ng import HomeTroller, STATE_LISTENING
-from .pyhs3ng.device import GenericEvent
+from pyhs3ng import HomeTroller, STATE_LISTENING
+from pyhs3ng.device import GenericEvent
 
 import homeassistant.helpers.config_validation as cv
 from homeassistant.const import (

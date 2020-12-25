@@ -2,7 +2,7 @@
 Support for HomeSeer cover-type devices.
 """
 
-from .pyhs3ng.device import GenericCover
+from pyhs3ng.device import GenericCover
 from .hoomseer import HomeseerEntity
 
 from homeassistant.components.cover import CoverEntity

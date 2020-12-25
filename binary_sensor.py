@@ -2,7 +2,7 @@
 Support for HomeSeer binary-type devices.
 """
 
-from .pyhs3ng.device import GenericBinarySensor
+from pyhs3ng.device import GenericBinarySensor
 
 from .hoomseer import HomeseerEntity
 from homeassistant.components.binary_sensor import BinarySensorEntity

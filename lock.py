@@ -3,7 +3,7 @@ Support for HomeSeer lock-type devices.
 """
 
 from .hoomseer import HomeseerEntity
-from .pyhs3ng.device import GenericDoorLock
+from pyhs3ng.device import GenericDoorLock
 
 
 from homeassistant.components.lock import LockEntity

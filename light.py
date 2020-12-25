@@ -2,7 +2,7 @@
 Support for HomeSeer light-type devices.
 """
 
-from .pyhs3ng.device import GenericSwitchMultilevel
+from pyhs3ng.device import GenericSwitchMultilevel
 from .hoomseer import HomeseerEntity
 from homeassistant.components.light import (
     ATTR_BRIGHTNESS,

@@ -1,5 +1,5 @@
 from .const import DEFAULT_NAMESPACE
-from .pyhs3ng import STATE_LISTENING
+from pyhs3ng import STATE_LISTENING
 from homeassistant.helpers.entity import Entity
 
 
