@@ -191,3 +191,20 @@ class HSRemote:
         """Fire the event."""
         data = {CONF_ID: self._device.ref, CONF_EVENT: self._device.value}
         self._hass.bus.async_fire(self._event, data, EventOrigin.remote)
+
+
+async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
+    """Unload a config entry."""
+    unload_ok = all(
+        await asyncio.gather(
+            *[
+                hass.config_entries.async_forward_entry_unload(entry, component)
+                for component in HOMESEER_PLATFORMS
+            ]
+        )
+    )
+
+    if unload_ok:
+        await hass.data[DOMAIN].stop()
+
+    return unload_ok
