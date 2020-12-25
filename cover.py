@@ -8,7 +8,7 @@ from .hoomseer import HomeseerEntity
 from homeassistant.components.cover import CoverEntity
 from homeassistant.const import STATE_CLOSED, STATE_CLOSING, STATE_OPENING
 
-from .const import _LOGGER, DOMAIN
+from .const import DATA_CLIENT, _LOGGER, DOMAIN
 
 DEPENDENCIES = ["homeseer"]
 
@@ -16,7 +16,7 @@ DEPENDENCIES = ["homeseer"]
 async def async_setup_entry(hass, config_entry, async_add_entities):
     """Set up HomeSeer cover-type devices."""
     cover_devices = []
-    homeseer = hass.data[DOMAIN]
+    homeseer = hass.data[DOMAIN][DATA_CLIENT][config_entry.entry_id]
 
     for device in homeseer.devices:
         if issubclass(type(device), GenericCover):

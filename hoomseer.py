@@ -1,3 +1,4 @@
+from .const import DEFAULT_NAMESPACE
 from .pyhs3ng import STATE_LISTENING
 from homeassistant.helpers.entity import Entity
 
@@ -9,7 +10,10 @@ class HomeseerEntity:
     def entity_id(self):
 
         if self._entity_id == None:
-            self._entity_id = f"{self.platform.domain}.{self._device.location}_{self._device.name}_{self._device.ref}"
+            if self._connection.namespace == DEFAULT_NAMESPACE:
+                self._entity_id = f"{self.platform.domain}.{self._device.location}_{self._device.name}_{self._device.ref}"
+            else:
+                self._entity_id = f"{self.platform.domain}.{self._device.location}_{self._device.name}_{self._connection.namespace}_{self._device.ref}"
 
         return self._entity_id
 
@@ -48,5 +52,6 @@ class HomeseerEntity:
         return False
 
     async def async_added_to_hass(self):
-        """Register value update callback."""
-        self._device.register_update_callback(self.async_schedule_update_ha_state)
+        if not self._device == None:
+            """Register value update callback."""
+            self._device.register_update_callback(self.async_schedule_update_ha_state)

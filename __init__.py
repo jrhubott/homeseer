@@ -6,7 +6,7 @@ https://github.com/marthoc/homeseer
 """
 import asyncio
 from homeassistant import data_entry_flow
-from homeassistant.config_entries import ConfigEntry
+from homeassistant.config_entries import ConfigEntry, PATH_CONFIG, SOURCE_IMPORT
 
 import voluptuous as vol
 from .pyhs3ng import HomeTroller, STATE_LISTENING
@@ -17,6 +17,7 @@ from homeassistant.const import (
     CONF_EVENT,
     CONF_HOST,
     CONF_ID,
+    CONF_NAME,
     CONF_PASSWORD,
     CONF_USERNAME,
 )
@@ -25,6 +26,7 @@ from homeassistant.helpers import aiohttp_client, discovery
 from homeassistant.helpers.template import Template
 
 from .const import (
+    DATA_CLIENT,
     _LOGGER,
     CONF_ALLOW_EVENTS,
     CONF_ASCII_PORT,
@@ -46,33 +48,51 @@ REQUIREMENTS = []
 
 
 async def async_setup(hass, config):
+    hass.data[DOMAIN] = {}
+    hass.data[DOMAIN][DATA_CLIENT] = {}
+
+    if DOMAIN not in config:
+        return True
+
+    conf = config[DOMAIN]
+
+    # Store config for use during entry setup:
+    hass.data[DOMAIN][PATH_CONFIG] = conf
 
     return True
 
 
-async def async_setup_entry(hass: HomeAssistant, config: ConfigEntry):
+async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
+
+    if not config_entry.unique_id:
+        hass.config_entries.async_update_entry(
+            config_entry, unique_id=config_entry.data[CONF_NAME]
+        )
 
     # migrate to options for some of the config
-    if CONF_NAME_TEMPLATE not in config.options and CONF_NAME_TEMPLATE in config.data:
+    if (
+        CONF_NAME_TEMPLATE not in config_entry.options
+        and CONF_NAME_TEMPLATE in config_entry.data
+    ):
 
         options = {
-            **config.options,
-            CONF_NAME_TEMPLATE: config.data[CONF_NAME_TEMPLATE],
+            **config_entry.options,
+            CONF_NAME_TEMPLATE: config_entry.data[CONF_NAME_TEMPLATE],
         }
-        data = config.data.copy()
+        data = config_entry.data.copy()
         data.pop(CONF_NAME_TEMPLATE)
-        hass.config_entries.async_update_entry(config, data=data, options=options)
+        hass.config_entries.async_update_entry(config_entry, data=data, options=options)
 
     """Set up the HomeSeer component."""
     #  config = config.get(DOMAIN)
-    host = config.data.get(CONF_HOST)
-    namespace = config.data.get(CONF_NAMESPACE)
-    username = config.data.get(CONF_USERNAME)
-    password = config.data.get(CONF_PASSWORD)
-    http_port = config.data.get(CONF_HTTP_PORT)
-    ascii_port = config.data.get(CONF_ASCII_PORT)
-    name_template = config.options.get(CONF_NAME_TEMPLATE)
-    allow_events = config.data.get(CONF_ALLOW_EVENTS)
+    host = config_entry.data.get(CONF_HOST)
+    namespace = config_entry.data.get(CONF_NAMESPACE)
+    username = config_entry.data.get(CONF_USERNAME)
+    password = config_entry.data.get(CONF_PASSWORD)
+    http_port = config_entry.data.get(CONF_HTTP_PORT)
+    ascii_port = config_entry.data.get(CONF_ASCII_PORT)
+    name_template = config_entry.options.get(CONF_NAME_TEMPLATE)
+    allow_events = config_entry.data.get(CONF_ALLOW_EVENTS)
 
     name_template = Template(name_template)
     name_template.hass = hass
@@ -105,11 +125,11 @@ async def async_setup_entry(hass: HomeAssistant, config: ConfigEntry):
     if not allow_events:
         HOMESEER_PLATFORMS.remove("scene")
 
-    hass.data[DOMAIN] = homeseer
+    hass.data[DOMAIN][DATA_CLIENT][config_entry.entry_id] = homeseer
 
     for component in HOMESEER_PLATFORMS:
         hass.async_create_task(
-            hass.config_entries.async_forward_entry_setup(config, component)
+            hass.config_entries.async_forward_entry_setup(config_entry, component)
         )
 
     hass.bus.async_listen_once("homeassistant_stop", homeseer.stop)
@@ -193,18 +213,22 @@ class HSRemote:
         self._hass.bus.async_fire(self._event, data, EventOrigin.remote)
 
 
-async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
+async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry):
+
+    homeseer = hass.data[DOMAIN][DATA_CLIENT][config_entry.entry_id]
+
+    await homeseer.stop()
+
+    hass.data[DOMAIN][DATA_CLIENT].pop(config_entry.entry_id)
+
     """Unload a config entry."""
     unload_ok = all(
         await asyncio.gather(
             *[
-                hass.config_entries.async_forward_entry_unload(entry, component)
+                hass.config_entries.async_forward_entry_unload(config_entry, component)
                 for component in HOMESEER_PLATFORMS
             ]
         )
     )
-
-    if unload_ok:
-        await hass.data[DOMAIN].stop()
 
     return unload_ok

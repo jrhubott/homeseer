@@ -10,7 +10,7 @@ from homeassistant.components.light import (
     LightEntity,
 )
 
-from .const import _LOGGER, DOMAIN
+from .const import DATA_CLIENT, _LOGGER, DOMAIN
 
 DEPENDENCIES = ["homeseer"]
 
@@ -18,7 +18,7 @@ DEPENDENCIES = ["homeseer"]
 async def async_setup_entry(hass, config_entry, async_add_entities):
     """Set up HomeSeer light-type devices."""
     light_devices = []
-    homeseer = hass.data[DOMAIN]
+    homeseer = hass.data[DOMAIN][DATA_CLIENT][config_entry.entry_id]
 
     for device in homeseer.devices:
         if issubclass(type(device), GenericSwitchMultilevel):
