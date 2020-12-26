@@ -17,7 +17,10 @@ from pyhs3ng import (
     HS_UNIT_FAHRENHEIT,
     HS_UNIT_LUX,
     HS_UNIT_PERCENTAGE,
-    parse_uom,
+    HS_UNIT_KILOWATTS,
+    HS_UNIT_AMPS,
+    HS_UNIT_VOLTS,
+    HS_UNIT_WATTS,
 )
 
 from homeassistant.const import (
@@ -31,6 +34,10 @@ from homeassistant.const import (
     TEMP_CELSIUS,
     TEMP_FAHRENHEIT,
     PERCENTAGE,
+    POWER_WATT,
+    POWER_KILO_WATT,
+    ELECTRICAL_CURRENT_AMPERE,
+    VOLT,
 )
 
 from homeassistant.helpers.entity import Entity
@@ -38,6 +45,18 @@ from .hoomseer import HomeseerEntity
 from .const import DATA_CLIENT, _LOGGER, DOMAIN
 
 DEPENDENCIES = ["homeseer"]
+
+
+UNIT_CONVERSION = {
+    HS_UNIT_CELSIUS: TEMP_CELSIUS,
+    HS_UNIT_FAHRENHEIT: TEMP_FAHRENHEIT,
+    HS_UNIT_LUX: LIGHT_LUX,
+    HS_UNIT_PERCENTAGE: PERCENTAGE,
+    HS_UNIT_KILOWATTS: POWER_KILO_WATT,
+    HS_UNIT_AMPS: ELECTRICAL_CURRENT_AMPERE,
+    HS_UNIT_VOLTS: VOLT,
+    HS_UNIT_WATTS: POWER_WATT,
+}
 
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
@@ -60,12 +79,10 @@ class HSSensor(HomeseerEntity, Entity):
     def __init__(self, device, connection):
         self._device = device
         self._connection = connection
-        self._uom = None
 
     async def async_added_to_hass(self):
         """Register value update callback."""
         self._device.register_update_callback(self.async_schedule_update_ha_state)
-        self._uom = await parse_uom(self._device)
 
     @property
     def state(self):
@@ -204,35 +221,29 @@ class HSSensorMultilevel(HSSensor):
 
     @property
     def device_class(self):
-        if self._uom == HS_UNIT_LUX:
+        uom = self._device.UnitOfMeasurement
+        if uom == HS_UNIT_LUX:
             return DEVICE_CLASS_ILLUMINANCE
-        if self._uom == HS_UNIT_CELSIUS:
+        if uom == HS_UNIT_CELSIUS:
             return DEVICE_CLASS_TEMPERATURE
-        if self._uom == HS_UNIT_FAHRENHEIT:
+        if uom == HS_UNIT_FAHRENHEIT:
             return DEVICE_CLASS_TEMPERATURE
         return None
 
     @property
     def unit_of_measurement(self):
-        if self._uom == HS_UNIT_LUX:
-            return LIGHT_LUX
-        if self._uom == HS_UNIT_CELSIUS:
-            return TEMP_CELSIUS
-        if self._uom == HS_UNIT_FAHRENHEIT:
-            return TEMP_FAHRENHEIT
-        if self._uom == HS_UNIT_PERCENTAGE:
-            return PERCENTAGE
+        uom = self._device.UnitOfMeasurement
+
+        if uom != None:
+            return UNIT_CONVERSION[uom]
+
         return None
 
 
-class HSSensorPower(HSSensor):
+class HSSensorPower(HSSensorMultilevel):
     @property
     def device_class(self):
         return DEVICE_CLASS_ENERGY
-
-    @property
-    def unit_of_measurement(self):
-        return "watts"
 
 
 def get_sensor_device(device, homeseer):
