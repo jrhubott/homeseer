@@ -5,6 +5,6 @@
   "documentation": "https://github.com/jrhubott/homeseer",
   "issue_tracker": "https://github.com/jrhubott/homeseer/issues",
   "dependencies": [],
-  "codeowners": ["@marthoc","jason@rhusoft.com"],
+  "codeowners": ["@marthoc","@jrhubott"],
   "requirements": ["pyhs3ng == 1.0.1"]
 }
