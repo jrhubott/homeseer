@@ -1,0 +1,7 @@
+
+{
+    "name": "Homeseer integration for Home Assistant",
+    "domains": ["binary_sensor", "sensor", "switch", "scene", "light"],
+    "render_readme": true,
+    "iot_class": "Local Polling"
+  }
