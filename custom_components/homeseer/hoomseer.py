@@ -27,6 +27,18 @@ class HomeseerEntity:
         return self._connection.api.state == STATE_LISTENING
 
     @property
+    def device_info(self):
+        """Return device information about Opensprinkler Controller."""
+
+        return {
+            "identifiers": {"homeseer", "1"},
+            "name": "Homeseer devices",
+            "manufacturer": "Rhusoft",
+            "model": "1.0",
+            "sw_version": "1.0",
+        }
+
+    @property
     def device_state_attributes(self):
         attr = {
             "HS Ref": self._device.ref,
