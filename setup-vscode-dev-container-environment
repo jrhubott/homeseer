@@ -1,0 +1,4 @@
+#only run this under the dev-container shell
+pushd /workspaces/core/config/custom_components
+ln -s ../../src/homeseer/custom_components/homeseer .
+popd
