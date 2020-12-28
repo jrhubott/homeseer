@@ -1,10 +1,15 @@
+from pyhs3ng.device import HomeSeerDevice
 from .const import DEFAULT_NAMESPACE
 from pyhs3ng import STATE_LISTENING
 from homeassistant.helpers.entity import Entity
 
 
 class HomeseerEntity:
-    _entity_id = None
+    def __init__(self, device: HomeSeerDevice, connection):
+        self._device = device
+        self._connection = connection
+        self._entity_id = None
+        self._parent = None
 
     @property
     def entity_id(self):
@@ -25,6 +30,14 @@ class HomeseerEntity:
     def available(self):
         """Return whether the device is available."""
         return self._connection.api.state == STATE_LISTENING
+
+    @property
+    def parent(self):
+        return self._parent
+
+    @parent.setter
+    def parent(self, value):
+        self.parent = value
 
     @property
     def device_state_attributes(self):

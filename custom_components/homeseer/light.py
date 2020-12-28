@@ -33,8 +33,7 @@ class HSLight(HomeseerEntity, LightEntity):
     """Representation of a HomeSeer light-type device."""
 
     def __init__(self, device, connection):
-        self._device = device
-        self._connection = connection
+        HomeseerEntity.__init__(self, device, connection)
 
     @property
     def supported_features(self):

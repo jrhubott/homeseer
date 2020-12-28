@@ -31,8 +31,7 @@ class HSLock(HomeseerEntity, LockEntity):
     """Representation of a HomeSeer lock device."""
 
     def __init__(self, device, connection):
-        self._device = device
-        self._connection = connection
+        HomeseerEntity.__init__(self, device, connection)
 
     @property
     def is_locked(self):

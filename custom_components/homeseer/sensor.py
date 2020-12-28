@@ -77,8 +77,7 @@ class HSSensor(HomeseerEntity, Entity):
     """Base representation of a HomeSeer sensor-type device."""
 
     def __init__(self, device, connection):
-        self._device = device
-        self._connection = connection
+        HomeseerEntity.__init__(self, device, connection)
 
     async def async_added_to_hass(self):
         """Register value update callback."""

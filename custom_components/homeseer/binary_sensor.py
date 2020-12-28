@@ -30,8 +30,7 @@ class HSBinarySensor(HomeseerEntity, BinarySensorEntity):
     """Representation of a HomeSeer binary-type device."""
 
     def __init__(self, device, connection):
-        self._device = device
-        self._connection = connection
+        HomeseerEntity.__init__(self, device, connection)
 
     @property
     def is_on(self):
