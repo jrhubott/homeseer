@@ -81,6 +81,21 @@ async def async_setup(hass, config):
     return True
 
 
+async def async_migrate_to_options(
+    configOption, hass: HomeAssistant, config_entry: ConfigEntry
+):
+    # migrate CONF_NAME_TEMPLATE to options for some of the config
+    if configOption not in config_entry.options and configOption in config_entry.data:
+
+        options = {
+            **config_entry.options,
+            configOption: config_entry.data[configOption],
+        }
+        data = config_entry.data.copy()
+        data.pop(configOption)
+        hass.config_entries.async_update_entry(config_entry, data=data, options=options)
+
+
 async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
 
     if not config_entry.unique_id:
@@ -88,7 +103,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
             config_entry, unique_id=config_entry.data[CONF_NAMESPACE]
         )
 
-    # migrate to options for some of the config
+    # migrate CONF_NAME_TEMPLATE to options for some of the config
     if (
         CONF_NAME_TEMPLATE not in config_entry.options
         and CONF_NAME_TEMPLATE in config_entry.data
@@ -102,6 +117,8 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
         data.pop(CONF_NAME_TEMPLATE)
         hass.config_entries.async_update_entry(config_entry, data=data, options=options)
 
+    await async_migrate_to_options(CONF_ALLOW_EVENTS, hass, config_entry)
+
     """Set up the HomeSeer component."""
     #  config = config.get(DOMAIN)
     host = config_entry.data.get(CONF_HOST)
@@ -111,7 +128,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     http_port = config_entry.data.get(CONF_HTTP_PORT)
     ascii_port = config_entry.data.get(CONF_ASCII_PORT)
     name_template = config_entry.options.get(CONF_NAME_TEMPLATE)
-    allow_events = config_entry.data.get(CONF_ALLOW_EVENTS)
+    allow_events = config_entry.options.get(CONF_ALLOW_EVENTS)
 
     name_template = Template(name_template)
     name_template.hass = hass
@@ -140,9 +157,6 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     _LOGGER.info(f"Connected to HomeSeer ASCII server at {host}:{ascii_port}")
 
     homeseer.add_remotes()
-
-    if not allow_events:
-        HOMESEER_PLATFORMS.remove("scene")
 
     hass.data[DOMAIN][DATA_CLIENT][config_entry.entry_id] = homeseer
 

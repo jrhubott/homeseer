@@ -111,6 +111,10 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                         CONF_NAME_TEMPLATE,
                         default=self.config_entry.options.get(CONF_NAME_TEMPLATE),
                     ): str,
+                    vol.Required(
+                        CONF_ALLOW_EVENTS,
+                        default=self.config_entry.options.get(CONF_ALLOW_EVENTS),
+                    ): cv.boolean,
                 }
             ),
         )

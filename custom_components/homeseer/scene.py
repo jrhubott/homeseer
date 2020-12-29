@@ -5,7 +5,7 @@ Support for HomeSeer Events.
 from .hoomseer import HomeseerEntity
 from homeassistant.components.scene import Scene
 
-from .const import DATA_CLIENT, _LOGGER, DOMAIN
+from .const import CONF_ALLOW_EVENTS, DATA_CLIENT, _LOGGER, DOMAIN
 
 DEPENDENCIES = ["homeseer"]
 
@@ -15,12 +15,15 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     scenes = []
     homeseer = hass.data[DOMAIN][DATA_CLIENT][config_entry.entry_id]
 
-    for event in homeseer.events:
-        dev = HSScene(event)
-        scenes.append(dev)
-        _LOGGER.info(f"Added HomeSeer event: {dev.name}")
+    allow_events = config_entry.options.get(CONF_ALLOW_EVENTS)
 
-    async_add_entities(scenes)
+    if allow_events:
+        for event in homeseer.events:
+            dev = HSScene(event)
+            scenes.append(dev)
+            _LOGGER.info(f"Added HomeSeer event: {dev.name}")
+
+        async_add_entities(scenes)
 
 
 class HSScene(Scene):
