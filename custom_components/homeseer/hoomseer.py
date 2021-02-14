@@ -68,3 +68,14 @@ class HomeseerEntity:
         if not self._device == None:
             """Register value update callback."""
             self._device.register_update_callback(self.async_schedule_update_ha_state)
+
+    @property
+    def device_info(self):
+        root = self._device.root
+
+        return {
+            "identifiers": {(self.platform.domain, root.ref)},
+            "name": root.name,
+            "manufacturer": root.interface_name,
+            "model": root.device_type_string,
+        }
