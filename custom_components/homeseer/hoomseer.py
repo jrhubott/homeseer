@@ -74,7 +74,7 @@ class HomeseerEntity:
         root = self._device.root
 
         return {
-            "identifiers": {(self.platform.domain, root.ref)},
+            "identifiers": {(self._connection.namespace, root.ref)},
             "name": root.name,
             "manufacturer": root.interface_name,
             "model": root.device_type_string,
