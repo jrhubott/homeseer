@@ -5,7 +5,17 @@ Support for HomeSeer binary-type devices.
 from pyhs3ng.device import GenericBinarySensor
 
 from .hoomseer import HomeseerEntity
-from homeassistant.components.binary_sensor import BinarySensorEntity
+from homeassistant.components.binary_sensor import (
+    BinarySensorEntity,
+    DEVICE_CLASS_DOOR,
+    DEVICE_CLASS_WINDOW,
+    DEVICE_CLASS_MOTION,
+    DEVICE_CLASS_GARAGE_DOOR,
+    DEVICE_CLASS_SMOKE,
+    DEVICE_CLASS_GAS,
+    DEVICE_CLASS_VIBRATION,
+)
+
 
 from .const import DATA_CLIENT, _LOGGER, DOMAIN
 
@@ -29,10 +39,48 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 class HSBinarySensor(HomeseerEntity, BinarySensorEntity):
     """Representation of a HomeSeer binary-type device."""
 
+    _device_class = None
+
     def __init__(self, device, connection):
         HomeseerEntity.__init__(self, device, connection)
+
+        name = self._device.name.lower()
+
+        if "window" in name:
+            self._device_class = DEVICE_CLASS_WINDOW
+
+        if "garage" in name:
+            self._device_class = DEVICE_CLASS_GARAGE_DOOR
+
+        if "door" in name:
+            self._device_class = DEVICE_CLASS_DOOR
+
+        if "entry" in name:
+            self._device_class = DEVICE_CLASS_DOOR
+
+        if "garage door" in name:
+            self._device_class = DEVICE_CLASS_GARAGE_DOOR
+
+        if "motion" in name:
+            self._device_class = DEVICE_CLASS_MOTION
+
+        if "fire" in name:
+            self._device_class = DEVICE_CLASS_SMOKE
+
+        if "smoke" in name:
+            self._device_class = DEVICE_CLASS_SMOKE
+
+        if "monoxide" in name:
+            self._device_class = DEVICE_CLASS_GAS
+
+        if "glass break" in name:
+            self._device_class = DEVICE_CLASS_VIBRATION
 
     @property
     def is_on(self):
         """Return true if device is on."""
         return self._device.value > 0
+
+    @property
+    def device_class(self):
+        return self._device_class
