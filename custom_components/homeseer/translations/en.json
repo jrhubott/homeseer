@@ -20,7 +20,8 @@
           "http_port": "HTTP port",
           "ascii_port": "ASCII port",
           "name_template": "Name template",
-          "allow_events": "Allow events"
+          "allow_events": "Allow events",
+          "forced_blinds": "Force Blinds"
         },
         "title": "Connect to the Homeseer controller"
       }
@@ -38,7 +39,8 @@
           "http_port": "HTTP port",
           "ascii_port": "ASCII port",
           "name_template": "Name template",
-          "allow_events": "Allow events"
+          "allow_events": "Allow events",
+          "forced_blinds": "Force Blinds"
         },
       "title": "Homeseer Options"
       }

@@ -35,6 +35,7 @@ from .const import (
     DEFAULT_NAME_TEMPLATE,
     CONF_ALLOW_EVENTS,
     DEFAULT_ALLOW_EVENTS,
+    CONF_FORCED_BLINDS,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -50,12 +51,12 @@ DEVICE_SCHEMA = vol.Schema(
         vol.Required(CONF_ASCII_PORT, default=DEFAULT_ASCII_PORT): cv.port,
         vol.Required(CONF_NAME_TEMPLATE, default=DEFAULT_NAME_TEMPLATE): cv.string,
         vol.Required(CONF_ALLOW_EVENTS, default=DEFAULT_ALLOW_EVENTS): cv.boolean,
+        vol.Required(CONF_FORCED_BLINDS, default="0"): cv.string,
     }
 )
 
 
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    VERSION = 1
     CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_POLL
 
     async def async_step_user(self, user_input=None):
@@ -115,6 +116,10 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                         CONF_ALLOW_EVENTS,
                         default=self.config_entry.options.get(CONF_ALLOW_EVENTS),
                     ): cv.boolean,
+                    vol.Required(
+                        CONF_FORCED_BLINDS,
+                        default=self.config_entry.options.get(CONF_FORCED_BLINDS),
+                    ): str,
                 }
             ),
         )

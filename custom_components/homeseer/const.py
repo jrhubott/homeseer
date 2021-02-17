@@ -16,6 +16,7 @@ CONF_ASCII_PORT = "ascii_port"
 CONF_ALLOW_EVENTS = "allow_events"
 CONF_NAMESPACE = "namespace"
 CONF_NAME_TEMPLATE = "name_template"
+CONF_FORCED_BLINDS = "forced_blinds"
 
 DATA_CLIENT = "homeseer_client"
 
