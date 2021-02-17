@@ -79,10 +79,6 @@ class HSSensor(HomeseerEntity, Entity):
     def __init__(self, device, connection):
         HomeseerEntity.__init__(self, device, connection)
 
-    async def async_added_to_hass(self):
-        """Register value update callback."""
-        self._device.register_update_callback(self.async_schedule_update_ha_state)
-
     @property
     def state(self):
         """Return the state of the device."""
@@ -248,8 +244,6 @@ class HSSensorPower(HSSensorMultilevel):
 def get_sensor_device(device, homeseer):
     """Return the proper sensor object based on device type."""
 
-    if issubclass(type(device), GenericMultiLevelSensor):
-        return HSSensorMultilevel(device, homeseer)
     if issubclass(type(device), GenericHumiditySensor):
         return HSHumidity(device, homeseer)
     if issubclass(type(device), GenericBatterySensor):
@@ -262,5 +256,9 @@ def get_sensor_device(device, homeseer):
         return HSOperatingState(device, homeseer)
     if issubclass(type(device), GenericPowerSensor):
         return HSSensorPower(device, homeseer)
+
+    # Check last for this one as everything is based on it
+    if issubclass(type(device), GenericMultiLevelSensor):
+        return HSSensorMultilevel(device, homeseer)
 
     return HSSensor(device, homeseer)
