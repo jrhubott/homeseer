@@ -78,8 +78,14 @@ class HSBinarySensor(HomeseerEntity, BinarySensorEntity):
 
     @property
     def is_on(self):
-        """Return true if device is on."""
-        return self._device.value > 0
+        """Return true if device is on.
+        Garage doors:
+            Closed is off
+            Open is on
+        """
+        if self._device._on_value is None:
+            return self._device.value > 0
+        return self.device.value == self._device._on_value
 
     @property
     def device_class(self):
