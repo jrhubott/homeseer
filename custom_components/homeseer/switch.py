@@ -28,12 +28,12 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
         if (
             issubclass(type(device), GenericDevice)
-            and device.device_type_string == "Virtual Device"
+            and device.device_type_string == "Virtual Switch"
         ):
             dev = HSSwitch(device, homeseer)
             switch_devices.append(dev)
             _LOGGER.info(
-                f"Added HomeSeer virtual device as switch-type device: {dev.name}"
+                f"Added HomeSeer virtual switch as switch-type device: {dev.name}"
             )
 
     async_add_entities(switch_devices)
